@@ -1,0 +1,22 @@
+{
+  "name": "day14-devops-lab",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Day 14 hands-on lab: CI/CD, Git workflow, Next.js SSR, Module Federation, Sentry and LogRocket with React + TypeScript",
+  "workspaces": ["shop-app", "catalog-remote", "next-shop"],
+  "scripts": {
+    "dev:mfe": "concurrently -n remote,shell -c magenta,cyan \"npm run dev -w catalog-remote\" \"npm run dev -w shop-app\"",
+    "dev:next": "npm run dev -w next-shop",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces",
+    "preview:mfe": "concurrently -n remote,shell -c magenta,cyan \"npm run preview -w catalog-remote\" \"npm run preview -w shop-app\"",
+    "start:next": "npm run start -w next-shop"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}

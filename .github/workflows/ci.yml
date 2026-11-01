@@ -1,0 +1,71 @@
+# Section 1: CI/CD with GitHub Actions.
+# Runs on every pull request to main (checks only) and every push to main (checks + deploy).
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint (all 3 apps)
+        run: npm run lint
+
+      - name: Test (runs any test scripts you add)
+        run: npm test
+
+      - name: Build (type-check + production build of all 3 apps)
+        run: npm run build
+        env:
+          VITE_ENV_LABEL: PROD
+          VITE_APP_VERSION: 1.0.${{ github.run_number }}
+          # Repository → Settings → Secrets and variables → Actions → Variables
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_LOGROCKET_APP_ID: ${{ vars.VITE_LOGROCKET_APP_ID }}
+          CATALOG_REMOTE_URL: ${{ vars.CATALOG_REMOTE_URL }}
+          # Secrets: only needed for Sentry source-map upload (section 5). Empty = skipped.
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+
+      - name: Save the shell build
+        uses: actions/upload-artifact@v4
+        with:
+          name: shop-app-dist
+          path: shop-app/dist
+
+  deploy:
+    needs: build # only runs if every check above passed
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: shop-app-dist
+          path: dist
+
+      - name: Deploy to Netlify (skipped until the secrets are set)
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::notice::Deploy skipped: add NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID secrets to enable it."
+            exit 0
+          fi
+          npx --yes netlify-cli deploy --prod --dir=dist --site "$NETLIFY_SITE_ID"

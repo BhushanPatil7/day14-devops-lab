@@ -1,0 +1,6 @@
+/* Imported by ProductList.tsx, so these styles travel with the exposed component. */
+.catalog { border: 2px dashed #8250df; border-radius: 10px; padding: 16px; background: #fff; }
+.catalog__badge { margin: 0 0 12px; font-size: 12px; color: #8250df; font-weight: 600; }
+.catalog input { display: block; width: 100%; max-width: 320px; padding: 6px 8px; margin: 4px 0 12px; }
+.catalog ul { list-style: none; padding: 0; margin: 0; }
+.catalog li { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid #eee; }
