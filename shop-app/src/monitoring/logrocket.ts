@@ -38,5 +38,4 @@ export function identifyUser(user: { id: string; name: string }): void {
   logRocket?.identify(user.id, { name: user.name })
   Sentry.setUser({ id: user.id })
   console.info(`[monitoring] identified user ${user.id}`)
-  console.info(`[monitoring] identified user ${user.name}`)
 }
